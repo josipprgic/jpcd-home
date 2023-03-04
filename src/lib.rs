@@ -2,12 +2,21 @@ mod utils;
 
 use std::fmt;
 use wasm_bindgen::prelude::*;
+use wasm_bindgen_test;
+
+extern crate web_sys;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
 #[cfg(feature = "wee_alloc")]
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
+macro_rules! log {
+    ( $( $t:tt )* ) => {
+        web_sys::console::log_1(&format!( $( $t )* ).into());
+    }
+}
 
 #[wasm_bindgen]
 extern {
@@ -30,6 +39,15 @@ pub struct Universe {
 }
 
 impl Universe {
+
+    fn set_width(&mut self, size: u32) {
+        self.width = size;
+    }
+
+    fn set_height(&mut self, size: u32) {
+        self.height = size;
+    }
+
     fn get_index(&self, row: u32, column: u32) -> usize {
         (row * self.width + column) as usize
     }
@@ -49,6 +67,24 @@ impl Universe {
             }
         }
         count
+    }
+
+    fn get_cells(&self) -> &[Cell] {
+        &self.cells
+    }
+
+    fn set_cells(&mut self, cells: &[(u32, u32)]) {
+        self.reset();
+        for (row, col) in cells {
+            if *row < self.height && *col < self.width {
+                let idx = self.get_index(*row, *col);
+                self.cells[idx] = Cell::Alive
+            }
+        }
+    }
+
+    fn reset(&mut self) {
+        self.cells = (0..self.width * self.height).map(|_| Cell::Dead).collect()
     }
 }
 
@@ -75,10 +111,19 @@ impl Universe {
             }
         }
 
+        let mut diff = Vec::new();
+        for i in 0..next.len() {
+            if next[i] != self.cells[i] {
+                diff.push(i);
+            }
+        }
+        // log!{"Changed cells are {:?}", diff}
         self.cells = next;
     }
 
     pub fn new() -> Universe {
+        utils::set_panic_hook();
+
         let width = 128;
         let height = 64;
 
@@ -133,4 +178,34 @@ impl fmt::Display for Universe {
 #[wasm_bindgen]
 pub fn greet() {
     alert("Hello, jp-wasm!");
+}
+
+
+#[cfg(test)]
+pub fn input_spaceship() -> Universe {
+    let mut universe = Universe::new();
+    universe.set_width(6);
+    universe.set_height(6);
+    universe.set_cells(&[(1,2), (2,3), (3,1), (3,2), (3,3)]);
+    universe
+}
+
+#[cfg(test)]
+pub fn expected_spaceship() -> Universe {
+    let mut universe = Universe::new();
+    universe.set_width(6);
+    universe.set_height(6);
+    universe.set_cells(&[(2,1), (2,3), (3,2), (3,3), (4,2)]);
+    universe
+}
+
+wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
+
+#[cfg(test)]
+#[wasm_bindgen_test::wasm_bindgen_test]
+pub fn test_tick() {
+    let mut input_universe = input_spaceship();
+    let expected_universe = expected_spaceship();
+    input_universe.tick();
+    assert_eq!(&input_universe.get_cells(), &expected_universe.get_cells());
 }
