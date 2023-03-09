@@ -33,3 +33,15 @@ h1 + .subtitle {
   display: block;
   margin-top: -1em;
 }
+
+.game-of-life {
+  display: inline-block;
+  background-color: aliceblue;
+  width: max-content;
+  overflow: hidden;
+}
+
+.game-buttons {
+  width: 100%;
+  margin-top: 20px;
+}
