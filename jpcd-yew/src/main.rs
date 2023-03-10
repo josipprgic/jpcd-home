@@ -1,3 +1,4 @@
+use gloo::timers::callback::Interval;
 use yew::html::Scope;
 use yew::{classes, html, Component, Context, Html};
 
@@ -21,13 +22,16 @@ pub enum Msg {
     Start,
     Stop,
     Reset,
-    ToggleCell(usize)
+    ToggleCell(usize),
+    Tick
 }
 
 pub struct Universe {
     width: usize,
     height: usize,
     cells: Vec<Cell>,
+    active: bool,
+    _interval: Interval,
 }
 
 impl Universe {
@@ -76,7 +80,18 @@ impl Universe {
     }
 
     fn reset(&mut self) {
-        self.cells = (0..self.width * self.height).map(|_| Cell::Dead).collect()
+        let width = 53;
+        let height = 40;
+
+        self.cells = (0..width * height)
+            .map(|i| {
+                if i % 9 == 0 || i % 7 == 0 {
+                    Cell::Alive
+                } else {
+                    Cell::Dead
+                }
+            })
+            .collect();
     }
 
     pub fn tick(&mut self) {
@@ -110,13 +125,13 @@ impl Universe {
         self.cells = next;
     }
 
-    pub fn new() -> Universe {
-        let width = 128;
-        let height = 64;
+    pub fn new(int: Interval) -> Universe {
+        let width = 53;
+        let height = 40;
 
         let cells = (0..width * height)
             .map(|i| {
-                if i % 2 == 0 || i % 7 == 0 {
+                if i % 9 == 0 || i % 7 == 0 {
                     Cell::Alive
                 } else {
                     Cell::Dead
@@ -128,6 +143,8 @@ impl Universe {
             width,
             height,
             cells,
+            active: false,
+            _interval: int
         }
     }
 
@@ -169,7 +186,10 @@ impl Component for Universe {
     type Properties = ();
 
     fn create(ctx: &Context<Self>) -> Self {
-        Universe::new()
+        let callback = ctx.link().callback(|_| Msg::Tick);
+        let interval = Interval::new(1, move || callback.emit(()));
+
+        Universe::new(interval)
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
@@ -179,7 +199,7 @@ impl Component for Universe {
             .map(|(n, cells)| {
                 let idx_offset = n * self.width;
 
-                let cells = self.cells
+                let cells = cells
                     .iter()
                     .enumerate()
                     .map(|(x, cell)| self.view_cell(idx_offset + x, *cell, ctx.link()));
@@ -193,6 +213,11 @@ impl Component for Universe {
 
         html!{
             <div>
+                <section class="game-container">
+                    <header class="app-header">
+                        <h1 class="app-title">{ "Game of Life" }</h1>
+                    </header>
+                    <section class="game-area">
                         <div class="game-of-life">
                             { for cell_rows }
                         </div>
@@ -201,8 +226,47 @@ impl Component for Universe {
                             <button class="game-button" onclick={ctx.link().callback(|_| Msg::Stop)}>{ "Stop" }</button>
                             <button class="game-button" onclick={ctx.link().callback(|_| Msg::Reset)}>{ "Reset" }</button>
                         </div>
-
+                    </section>
+                </section>
+                <footer class="app-footer">
+                    <strong class="footer-text">
+                      { "Game of Life - a yew experiment " }
+                    </strong>
+                </footer>
             </div>
+        }
+    }
+
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+        match msg {
+            Msg::Start => {
+                self.active = true;
+                log::info!("Start");
+                false
+            }
+            Msg::Reset => {
+                self.reset();
+                log::info!("Reset");
+                true
+            }
+            Msg::Stop => {
+                self.active = false;
+                log::info!("Stop");
+                false
+            }
+            Msg::ToggleCell(idx) => {
+                let cell = self.cells.get_mut(idx).unwrap();
+                cell.toggle();
+                true
+            }
+            Msg::Tick => {
+                if self.active {
+                    self.tick();
+                    true
+                } else {
+                    false
+                }
+            }
         }
     }
 }
