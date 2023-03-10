@@ -1,5 +1,5 @@
-use std::fmt;
-use yew::prelude::*;
+use yew::html::Scope;
+use yew::{classes, html, Component, Context, Html};
 
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -17,10 +17,11 @@ impl Cell {
     }
 }
 
-enum Msg {
+pub enum Msg {
     Start,
     Stop,
-    Reset
+    Reset,
+    ToggleCell(usize)
 }
 
 pub struct Universe {
@@ -130,10 +131,6 @@ impl Universe {
         }
     }
 
-    pub fn render(&self) -> String {
-        self.to_string()
-    }
-
     pub fn width(&self) -> usize {
         self.width
     }
@@ -150,24 +147,25 @@ impl Universe {
         let idx = self.get_index(row, column);
         self.cells[idx].toggle();
     }
-}
 
-impl fmt::Display for Universe {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for line in self.cells.as_slice().chunks(self.width as usize) {
-            for &cell in line {
-                let symbol = if cell == Cell::Dead { '◻' } else { '◼' };
-                write!(f, "{}", symbol)?;
+    fn view_cell(&self, offset: usize, cell: Cell, link: &Scope<Self>) -> Html {
+        match cell {
+            Cell::Dead => html! {
+            <div key={offset} class={classes!("game-cell", "dead-cell")}
+                onclick={link.callback(move |_| Msg::ToggleCell(offset))}>
+            </div>
+            },
+            Cell::Alive => html! {
+            <div key={offset} class={classes!("game-cell", "alive-cell")}
+                onclick={link.callback(move |_| Msg::ToggleCell(offset))}>
+            </div>
             }
-            write!(f, "\n")?;
         }
-
-        Ok(())
     }
 }
 
 impl Component for Universe {
-    type Message = ();
+    type Message = Msg;
     type Properties = ();
 
     fn create(ctx: &Context<Self>) -> Self {
@@ -181,8 +179,17 @@ impl Component for Universe {
             .map(|(n, cells)| {
                 let idx_offset = n * self.width;
 
+                let cells = self.cells
+                    .iter()
+                    .enumerate()
+                    .map(|(x, cell)| self.view_cell(idx_offset + x, *cell, ctx.link()));
+                html! {
+                        <div key={n} class="game-row">
+                            { for cells }
+                        </div>
+                    }
 
-            }).collect();
+            }).collect::<Vec<Html>>();
 
         html!{
             <div>
