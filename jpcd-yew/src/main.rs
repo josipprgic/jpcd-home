@@ -1,164 +1,102 @@
-use gloo::timers::callback::Interval;
+use yew::{Component, Context, Html, html};
 use yew::html::Scope;
-use yew::{classes, html, Component, Context, Html};
-use jpcd_game_of_life::{cell::Cell, universe::Universe};
+use yew_router::prelude::*;
 
-pub enum Msg {
-    Start,
-    Stop,
-    Reset,
-    ToggleCell((usize, usize)),
-    Tick
+mod conway_page;
+use conway_page::Conway;
+
+#[derive(Routable, PartialEq, Eq, Clone, Debug)]
+pub enum Route {
+    #[at("/")]
+    Home,
+    #[not_found]
+    #[at("/404")]
+    NotFound,
+    #[at("/conway")]
+    Conway
 }
 
-pub struct UniverseDec {
-    universe: Universe,
-    active: bool,
-    _interval: Option<Interval>,
+struct Home {
+    name: &'static str
 }
 
-impl UniverseDec {
-    fn new(interval: Option<Interval>) -> Self {
-        let width = 53;
-        let height = 40;
-        let mut universe = Universe::new(width, height);
+impl Component for Home {
 
-        (0..(width * height))
-            .filter(|i| {
-                i % 9 == 0 || i % 7 == 0
-            })
-            .for_each(|id| {
-                universe.toggle(id % width, id / width)
-            });
-
-        UniverseDec{
-            universe,
-            active: false,
-            _interval: interval
-        }
-    }
-
-    fn view_cell(&self, width: usize, height: usize, cell: Cell, link: &Scope<Self>) -> Html {
-        match cell {
-            Cell::Dead => html! {
-            <div key={width * height} class={classes!("game-cell", "dead-cell")}
-                onclick={link.callback(move |_| Msg::ToggleCell((width, height)))}>
-            </div>
-            },
-            Cell::Alive => html! {
-            <div key={width * height} class={classes!("game-cell", "alive-cell")}
-                onclick={link.callback(move |_| Msg::ToggleCell((width, height)))}>
-            </div>
-            }
-        }
-    }
-}
-
-impl Component for UniverseDec {
-    type Message = Msg;
+    type Message = ();
     type Properties = ();
 
-    fn create(ctx: &Context<Self>) -> Self {
-        let callback = ctx.link().callback(|_| Msg::Tick);
-        let interval = Interval::new(100, move || callback.emit(()));
-
-        UniverseDec::new(Some(interval))
+    fn create(_: &Context<Self>) -> Self {
+        Self { name: "Visitor" }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
-        match msg {
-            Msg::Start => {
-                self.active = true;
-                log::info!("Start");
-                false
-            }
-            Msg::Reset => {
-                self.universe.reset();
-                log::info!("Reset");
-                true
-            }
-            Msg::Stop => {
-                self.active = false;
-                log::info!("Stop");
-                false
-            }
-            Msg::ToggleCell(idx) => {
-                self.universe.toggle(idx.0, idx.1);
-                true
-            }
-            Msg::Tick => {
-                if self.active {
-                    self.universe.tick();
-                    true
-                } else {
-                    false
-                }
-            }
+    fn view(&self, _ctx: &Context<Self>) -> Html {
+        let write =  "Hello ".to_string() + self.name;
+        html! {
+                <div class="home-greeting">{ write }</div>
         }
+    }
+}
+
+impl App {
+    fn view_nav(&self, _link: &Scope<Self>) -> Html {
+        html! {
+            <nav class="navbar is-primary" role="navigation" aria-label="main navigation">
+                <div class="navbar-brand">
+                    <h1 class="navbar-item">{ "JPCD" }</h1>
+                </div>
+                <div class="navbar-menu">
+                    <div class="navbar-start">
+                        <Link<Route> classes="navbar-item" to={Route::Home}>
+                            { "Home" }
+                        </Link<Route>>
+                        <Link<Route> classes="navbar-item" to={Route::Conway}>
+                            { "Conway" }
+                        </Link<Route>>
+                    </div>
+                </div>
+            </nav>
+        }
+    }
+}
+
+impl Component for App {
+    type Message = ();
+    type Properties = ();
+
+    fn create(_: &Context<Self>) -> Self {
+        App{}
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let cell_rows = self.universe.enumerate_rows()
-            .map(|(n, cells)| {
-                let cells = cells
-                    .iter()
-                    .enumerate()
-                    .map(|(x, cell)| self.view_cell(x, n, *cell, ctx.link()));
-                html! {
-                        <div key={n} class="game-row">
-                            { for cells }
-                        </div>
-                    }
-
-            }).collect::<Vec<Html>>();
-
-        html!{
-            <div>
-                <section class="game-container">
-                    <header class="app-header">
-                        <h1 class="app-title">{ "Game of Life" }</h1>
-                    </header>
-                    <section class="game-area">
-                        <div class="game-of-life">
-                            { for cell_rows }
-                        </div>
-                        <div class="game-buttons">
-                            <button class="game-button"
-                                onclick={ctx.link().callback(|_| Msg::Start)}>{ "Start" }</button>
-                            <button class="game-button"
-                                onclick={ctx.link().callback(|_| Msg::Stop)}>{ "Stop" }</button>
-                            <button class="game-button"
-                                onclick={ctx.link().callback(|_| Msg::Reset)}>{ "Reset" }</button>
-                        </div>
-                    </section>
-                </section>
-                <footer class="app-footer">
-                    <strong class="footer-text">
-                      { "Game of Life - a yew experiment " }
-                    </strong>
+        html! {
+            <BrowserRouter>
+                { self.view_nav(ctx.link()) }
+                <main>
+                    <Switch<Route> render={switch} />
+                </main>
+                <footer class="footer">
+                    <div class="content has-text-centered">
+                        { "Created by " }
+                        <a href="https://github.com/josipprgic">{ "Josip Prgic" }</a>
+                    </div>
                 </footer>
-            </div>
+            </BrowserRouter>
         }
     }
 }
+
+fn switch(route: Route) -> Html {
+    match route {
+        Route::Home => html! { <Home/> },
+        Route::Conway => html! { <Conway/> },
+        _ => {html! {<div/>}}
+    }
+}
+
+struct App {}
 
 fn main() {
     wasm_logger::init(wasm_logger::Config::default());
     log::trace!("Initializing yew...");
-    yew::Renderer::<UniverseDec>::new().render();
-}
-
-#[test]
-fn test_one() {
-    let mut un = UniverseDec::new(None);
-
-    un.universe.tick();
-    un.universe.tick();
-    un.universe.tick();
-    un.universe.tick();
-    un.universe.tick();
-    un.universe.tick();
-    un.universe.tick();
-    un.universe.tick();
-    un.universe.tick();
+    yew::Renderer::<App>::new().render();
 }
