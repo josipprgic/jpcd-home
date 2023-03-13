@@ -1,0 +1,70 @@
+.hero {
+  &.has-background {
+    position: relative;
+    overflow: hidden;
+  }
+
+  &-background {
+    position: absolute;
+    object-fit: cover;
+    object-position: bottom;
+    width: 100%;
+    height: 100%;
+
+    &.is-transparent {
+      opacity: 0.3;
+    }
+  }
+}
+
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+
+  background: linear-gradient(to bottom right, #444444, #00279a);
+  font-size: 1.5rem;
+}
+
+.app-header {
+  height: 130px;
+  color: aliceblue;
+}
+
+.app-title {
+  font-size: 24px;
+  width: 100%;
+  font-weight: 100;
+  text-align: center;
+  text-rendering: optimizeLegibility;
+}
+
+.home-greeting {
+  display: inline-block;
+  width: 100px;
+  height: 1000px;
+  padding: 50px;
+  border: 1px solid blue;
+  background-color: yellow;
+}
+
+.app-footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  background-color: #7894e8;
+  color: #c41e1e;
+  text-align: center;
+}
+
+.footer-text {
+  color: #020202;
+  text-align: center;
+  font-size: 14px;
+}
