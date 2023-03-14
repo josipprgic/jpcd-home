@@ -61,7 +61,7 @@ impl Component for Conway {
 
     fn create(ctx: &Context<Self>) -> Self {
         let callback = ctx.link().callback(|_| Msg::Tick);
-        let interval = Interval::new(100, move || callback.emit(()));
+        let interval = Interval::new(1, move || callback.emit(()));
 
         Conway::new(Some(interval))
     }
