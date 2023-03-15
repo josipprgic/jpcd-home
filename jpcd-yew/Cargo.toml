@@ -17,3 +17,5 @@ wasm-logger = "0.2"
 gloo = "0.8"
 jpcd_game_of_life = "0.0.2"
 yew-router = "0.17.0"
+rand = "0.8.5"
+getrandom = { version = "0.2.8", features = ["js"] }

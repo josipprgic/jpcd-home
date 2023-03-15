@@ -133,11 +133,6 @@ impl Component for Conway {
                         </div>
                     </section>
                 </section>
-                <footer class="app-footer">
-                    <strong class="footer-text">
-                      { "Game of Life - a yew experiment " }
-                    </strong>
-                </footer>
             </div>
         }
     }

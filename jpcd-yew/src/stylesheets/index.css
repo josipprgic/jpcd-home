@@ -1,0 +1,91 @@
+:root {
+  --primary-color: #1a3abc;
+  --secondary-color: #61618c;
+}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Roboto", sans-serif;
+  user-select: none;
+}
+body {
+  position: relative;
+  min-height: 100vh;
+  text-align: center;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* Title CSS */
+.title {
+  background-color: var(--primary-color);
+  text-align: center;
+  font-size: 1.2em;
+  padding-block: 0.5em;
+  color: #fff;
+  cursor: pointer;
+}
+
+/* Navbar CSS */
+.navbar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.8em;
+  font-size: 16px;
+  min-height: 70px;
+  padding-block: 0.6em;
+  background-color: var(--secondary-color);
+  transition: all 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+.navbar a {
+  all: unset;
+  cursor: pointer;
+  color: #fff;
+  font-weight: bold;
+  padding: 8px 10px;
+  border-radius: 6px;
+  transition: 0.3s;
+  background-color: #61618c;
+}
+.navbar a:hover {
+  background-color: transparent;
+}
+.navbar #menu {
+  width: fit-content;
+  outline: none;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 8px;
+  background-color: #61618c;
+  color: white;
+}
+.navbar > .icon {
+  display: none;
+}
+
+.home-greeting {
+  display: inline-block;
+  width: 100px;
+  height: 1000px;
+  padding: 50px;
+  border: 1px solid blue;
+  background-color: yellow;
+}
+
+.app-footer {
+  width: 100%;
+  background-color: #7894e8;
+  color: #c41e1e;
+  text-align: center;
+}
+
+.footer-text {
+  color: #020202;
+  text-align: center;
+  font-size: 14px;
+}

@@ -55,7 +55,7 @@ There are a few things you have to adjust when adopting this template.
 ### Remove example code
 
 The code in [src/main.rs](src/main.rs) specific to the example is limited to only the `view` method.
-There is, however, a fair bit of Sass in [index.scss](index.scss) you can remove.
+There is, however, a fair bit of Sass in [index.scss](src/stylesheets/index.css) you can remove.
 
 ### Update metadata
 
