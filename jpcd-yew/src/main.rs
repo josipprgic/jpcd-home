@@ -2,8 +2,8 @@ use yew::{Component, Context, Html, html};
 use yew::html::Scope;
 use yew_router::prelude::*;
 
-mod conway_page;
-use conway_page::Conway;
+mod pages;
+use pages::{conway::Conway, sorting_algos::Sorting};
 
 #[derive(Routable, PartialEq, Eq, Clone, Debug)]
 pub enum Route {
@@ -13,7 +13,10 @@ pub enum Route {
     #[at("/404")]
     NotFound,
     #[at("/conway")]
-    Conway
+    Conway,
+    #[at("/sorting")]
+    Sorting
+
 }
 
 struct Home {
@@ -52,6 +55,9 @@ impl App {
                         <Link<Route> classes="navbar-item" to={Route::Conway}>
                             { "Conway" }
                         </Link<Route>>
+                        <Link<Route> classes="navbar-item" to={Route::Sorting}>
+                            { "Sorting" }
+                        </Link<Route>>
                     </div>
                 </div>
             </nav>
@@ -74,7 +80,7 @@ impl Component for App {
                 <main>
                     <Switch<Route> render={switch} />
                 </main>
-                <footer class="footer">
+                <footer class="app-footer">
                     <div class="content has-text-centered">
                         { "Created by " }
                         <a href="https://github.com/josipprgic">{ "Josip Prgic" }</a>
@@ -89,6 +95,7 @@ fn switch(route: Route) -> Html {
     match route {
         Route::Home => html! { <Home/> },
         Route::Conway => html! { <Conway/> },
+        Route::Sorting => html! { <Sorting/> },
         _ => {html! {<div/>}}
     }
 }
